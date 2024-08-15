@@ -1,4 +1,4 @@
-# RESTful-API-in-Go
+# Go-AUTH
 A Authentication built with Go, GORM, and the Gin framework.
 
 ## Features

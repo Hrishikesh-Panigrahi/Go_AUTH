@@ -1,20 +1,21 @@
 package connectors
 
 import (
-
+	"fmt"
 	"net/http"
 	"os"
 	"time"
-	"fmt"
 
 	"GO_AUTH/initializers"
 	"GO_AUTH/models"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
+// Register is a function to register an user
+// it creates an user with the email and password
 func Register(c *gin.Context) {
 	var body struct {
 		Email    string
@@ -53,6 +54,10 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
+// Login is a function to login a user
+// it checks if the email and password are correct
+// if correct it then generates a jwt token and sets it as a cookie
+// if not correct it returns a 401
 func Login(c *gin.Context) {
 	var body struct {
 		Email    string
@@ -71,13 +76,13 @@ func Login(c *gin.Context) {
 	initializers.DB.First(&user, "email = ?", body.Email)
 
 	if user.ID == 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "invalid credentials",
-			})
-			return
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "invalid credentials",
+		})
+		return
 	}
 
-	err :=bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -87,9 +92,9 @@ func Login(c *gin.Context) {
 	}
 
 	// generate a jwt toke
-	token:= jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 24 *30).Unix(),
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -106,10 +111,9 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
+// Validate is a function to validate a user
 func Validate(c *gin.Context) {
 	user, _ := c.Get("user")
-
-	// user.(models.User)
 	fmt.Println(user)
 
 	c.JSON(http.StatusOK, gin.H{

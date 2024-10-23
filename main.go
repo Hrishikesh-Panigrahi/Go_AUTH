@@ -1,8 +1,6 @@
 package main
 
 import (
-	// "net/http"
-
 	"GO_AUTH/connectors"
 	"GO_AUTH/initializers"
 	"GO_AUTH/middleware"
